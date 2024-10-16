@@ -1,0 +1,369 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------------
+// model User {
+//   id       Int     @id @default(autoincrement())
+//   username String  @unique
+//   gender   Gender?
+//   weight   Float?
+//   height   Float?
+//   role     Role    @default(CLIENT)
+//   email    String? @unique
+//   mobile   String? @unique
+//   password String
+// }
+
+// enum Gender {
+//   MALE
+//   FEMALE
+// }
+
+// enum Role {
+//   ADMIN
+//   TRAINER
+//   CLIENT
+// }
+// -------------------------------------------------------------------------
+// model User {
+//   id             Int               @id @default(autoincrement())
+//   firstName      String
+//   lastName       String
+//   age            Int
+//   gender         String
+//   weight         Float
+//   height         Float
+//   role           Role
+//   progress       String?
+//   programs       TrainingProgram[] // A Trainer can create many programs
+//   verification   Verification[] // A Trainer has one verification record
+//   progressImages ProgressImage[] // A User can upload many progress images
+//   ClientPayment  Payment[]         @relation(name: "ClientPayment") // Payments as a client or trainer
+//   TrainerPayment Payment[]         @relation(name: "TrainerPayment")
+//   Payment        Payment[]
+// }
+
+// model TrainingProgram {
+//   id       Int                @id @default(autoincrement())
+//   author   User               @relation(fields: [authorId], references: [id])
+//   authorId Int
+//   status   ProgramStatus
+//   rating   Float?
+//   workouts ProgramToWorkout[] // A TrainingProgram can consist of many workouts
+// }
+
+// model Exercise {
+//   id         Int           @id @default(autoincrement())
+//   name       String
+//   image      String? // URL to image showing exercise
+//   detail     String?
+//   equipments String? // Equipment required for exercise
+//   muscle     String // Target muscle or muscle group
+//   workouts   WorkoutList[] // Exercises can be part of many workouts
+// }
+
+// model WorkoutList {
+//   id             Int                @id @default(autoincrement())
+//   exercise       Exercise           @relation(fields: [exerciseId], references: [id])
+//   exerciseId     Int
+//   sets           Int
+//   reps           Int
+//   rest           Int
+//   personalRecord Float? // Personal best record for this workout
+//   programs       ProgramToWorkout[] // Workouts can be in many programs
+// }
+
+// model ProgramToWorkout {
+//   id        Int             @id @default(autoincrement())
+//   program   TrainingProgram @relation(fields: [programId], references: [id])
+//   programId Int
+//   workout   WorkoutList     @relation(fields: [workoutId], references: [id])
+//   workoutId Int
+// }
+
+// model Verification {
+//   id                  Int                 @id @default(autoincrement())
+//   user                User                @relation(fields: [userId], references: [id])
+//   userId              Int
+//   image               VerificationImage   @relation(fields: [verificationImageId], references: [id]) // A Verification has one image
+//   adminVerified       Boolean             @default(false) // Whether admin verified the trainer
+//   verificationImageId Int
+//   VerificationImage   VerificationImage[]
+// }
+
+// model VerificationImage {
+//   id             Int          @id @default(autoincrement())
+//   assetId        String
+//   publicId       String
+//   url            String
+//   secureUrl      String
+//   createdAt      DateTime     @default(now())
+//   updatedAt      DateTime     @updatedAt
+//   verification   Verification @relation(fields: [verificationId], references: [id])
+//   verificationId Int
+// }
+
+// model ProgressImage {
+//   id        Int      @id @default(autoincrement())
+//   assetId   String
+//   publicId  String
+//   url       String
+//   secureUrl String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   user      User     @relation(fields: [userId], references: [id])
+//   userId    Int
+// }
+
+// model Payment {
+//   id        Int           @id @default(autoincrement())
+//   amount    Float
+//   date      DateTime      @default(now())
+//   status    PaymentStatus
+//   client    User          @relation(name: "ClientPayment", fields: [clientId], references: [id])
+//   clientId  Int
+//   trainer   User          @relation(name: "TrainerPayment", fields: [trainerId], references: [id])
+//   trainerId Int
+//   User      User?         @relation(fields: [userId], references: [id])
+//   userId    Int?
+// }
+
+// enum Role {
+//   TRAINER
+//   CLIENT
+//   ADMIN
+// }
+
+// enum ProgramStatus {
+//   PUBLIC
+//   PRIVATE
+//   PERSONAL
+// }
+
+// enum PaymentStatus {
+//   PENDING
+//   COMPLETED
+//   FAILED
+// }
+// -----------------------------------------------------------------------
+// model User {
+//   id             Int               @id @default(autoincrement())
+//   firstName      String
+//   lastName       String
+//   age            Int
+//   gender         String
+//   weight         Float
+//   height         Float
+//   role           Role
+//   progressImages ProgressImage[]
+//   programs       TrainingProgram[]
+//   ClientPayment  Payment[]         @relation(name: "ClientPayment") // Payments as both client and trainer
+//   TrainerPayment Payment[]         @relation(name: "TrainerPayment") // Payments as both client and trainer
+//   verification   Verification?
+// }
+
+// model TrainingProgram {
+//   id       Int           @id @default(autoincrement())
+//   author   User          @relation(fields: [authorId], references: [id])
+//   authorId Int
+//   status   ProgramStatus
+//   rating   Float?
+//   workouts Workout[] // A TrainingProgram can consist of many workouts
+//   clients  User[] // Clients who save or follow this program
+// }
+
+// model Workout {
+//   id                Int              @id @default(autoincrement())
+//   name              String
+//   image             String?
+//   detail            String?
+//   equipment         String?
+//   muscle            String
+//   sets              Int
+//   reps              Int
+//   rest              Int
+//   personalRecord    Float?
+//   programId         Int? // Workouts belong to a program (optional, can be browsed)
+//   TrainingProgram   TrainingProgram? @relation(fields: [trainingProgramId], references: [id])
+//   trainingProgramId Int?
+// }
+
+// model Verification {
+//   id         Int     @id @default(autoincrement())
+//   user       User    @relation(fields: [userId], references: [id])
+//   userId     Int
+//   imageUrl   String // Image URL of the certification
+//   isVerified Boolean @default(false)
+// }
+
+// model ProgressImage {
+//   id        Int      @id @default(autoincrement())
+//   url       String
+//   createdAt DateTime @default(now())
+//   user      User     @relation(fields: [userId], references: [id])
+//   userId    Int
+// }
+
+// model Payment {
+//   id        Int           @id @default(autoincrement())
+//   amount    Float
+//   date      DateTime      @default(now())
+//   status    PaymentStatus
+//   client    User          @relation(name: "ClientPayment", fields: [clientId], references: [id])
+//   clientId  Int
+//   trainer   User?         @relation(name: "TrainerPayment", fields: [trainerId], references: [id])
+//   trainerId Int?
+// }
+
+// enum Role {
+//   CLIENT
+//   TRAINER
+//   ADMIN
+// }
+
+// enum ProgramStatus {
+//   PUBLIC
+//   PRIVATE
+//   PERSONAL
+// }
+
+// enum PaymentStatus {
+//   PENDING
+//   COMPLETED
+//   FAILED
+// }
+// -----------------------------------------------------------------
+model User {
+  id             Int               @id @default(autoincrement())
+  email          String?           @unique
+  mobile         String?           @unique
+  username       String            @unique
+  gender         Gender?
+  weight         Float?
+  height         Float?
+  role           Role              @default(CLIENT)
+  password       String
+  progressImages ProgressImage[]
+  programs       TrainingProgram[]
+  ClientPayment  Payment[]         @relation(name: "ClientPayment") // Payments as both client and trainer
+  TrainerPayment Payment[]         @relation(name: "TrainerPayment") // Payments as both client and trainer
+  verification   Verification?
+  UserWorkout    UserWorkout[]
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model TrainingProgram {
+  // Add name
+  // Add userAllowed
+  // Add image
+  id       Int              @id @default(autoincrement())
+  author   User             @relation(fields: [authorId], references: [id])
+  authorId Int // The trainer who created the course
+  status   ProgramStatus    @default(PERSONAL)
+  rating   Float?
+  name     String?          @default("Untitled program")
+  tags     String?
+  workouts ProgramWorkout[] // A TrainingProgram can consist of many ordered workouts
+  payments Payment[] // Payments made for this program
+}
+
+model Workout {
+  id               Int              @id @default(autoincrement())
+  name             String
+  force            String?
+  level            String?
+  mechanic         String?
+  equipment        String?
+  primaryMuscles   String?
+  secondaryMuscles String?
+  instructions     String?
+  category         String?
+  userWorkouts     UserWorkout[] // Users' personal records for this workout
+  programWorkout   ProgramWorkout[]
+}
+
+model ProgramWorkout {
+  id              Int             @id @default(autoincrement())
+  trainingProgram TrainingProgram @relation(fields: [programId], references: [id])
+  programId       Int
+  workout         Workout         @relation(fields: [workoutId], references: [id])
+  workoutId       Int
+  orderPriority   Int // Order of the workout in the training program
+  sets            Int
+  reps            Int
+  rest            Int
+}
+
+model UserWorkout {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         Int
+  workout        Workout  @relation(fields: [workoutId], references: [id])
+  workoutId      Int
+  personalRecord Float? // User-specific personal best for the workout
+  createdAt      DateTime @default(now()) // Track when the personal record was achieved
+  updatedAt      DateTime @updatedAt
+}
+
+model Verification {
+  id         Int     @id @default(autoincrement())
+  user       User    @relation(fields: [userId], references: [id])
+  userId     Int     @unique
+  imageUrl   String // Image URL of the certification
+  isVerified Boolean @default(false)
+}
+
+model ProgressImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+}
+
+model Payment {
+  id                Int             @id @default(autoincrement())
+  amount            Float
+  date              DateTime        @default(now())
+  status            PaymentStatus
+  client            User            @relation(name: "ClientPayment", fields: [clientId], references: [id])
+  clientId          Int // The user who is making the payment
+  trainer           User            @relation(name: "TrainerPayment", fields: [trainerId], references: [id])
+  trainerId         Int // The trainer receiving the payment
+  trainingProgram   TrainingProgram @relation(fields: [trainingProgramId], references: [id]) // Course being paid for
+  trainingProgramId Int // The specific course being paid for
+}
+
+enum Role {
+  CLIENT
+  TRAINER
+  ADMIN
+}
+
+enum ProgramStatus {
+  PUBLIC
+  PRIVATE
+  PERSONAL
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
