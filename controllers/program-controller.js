@@ -79,9 +79,12 @@ module.exports.removeWorkout = tryCatch(async (req, res, next) => {
 
 module.exports.getProgram = tryCatch(async (req, res, next) => {
   const { programId } = req.params;
+  const {day} = req.query
+  const input = !day ? {programId: +programId} : { programId: +programId ,  day: +day }
+  console.log(input)
   const programList = await prisma.programWorkout.findMany({
     orderBy: { orderPriority: "asc" },
-    where: { programId: +programId },
+    where: input,
     include: {
       workout: {
         select: {

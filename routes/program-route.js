@@ -16,9 +16,11 @@ router.post('/:programId/:workoutId',programController.addWorkout)
 // Remove exercise from program
 router.delete('/:id',programController.removeWorkout)
 // get program
-router.get('/:programId',programController.getProgram)
+router.get('/:programId?',programController.getProgram)
 // edit program
 router.patch('/:programId',programController.updateProgram)
+// edit publicity
 router.patch('/publicity/:programId/:publicity',programController.editPublicity)
+// 
 
 module.exports = router

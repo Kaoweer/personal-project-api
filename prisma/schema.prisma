@@ -298,6 +298,13 @@ model Workout {
   programWorkout   ProgramWorkout[]
 }
 
+model WorkoutDate {
+  id               Int            @id @default(autoincrement())
+  programworkoutId Int
+  ProgramWorkout   ProgramWorkout @relation(fields: [programworkoutId], references: [id])
+  date             Int
+}
+
 model ProgramWorkout {
   id              Int             @id @default(autoincrement())
   trainingProgram TrainingProgram @relation(fields: [programId], references: [id])
@@ -308,6 +315,8 @@ model ProgramWorkout {
   sets            Int
   reps            Int
   rest            Int
+  day             Int
+  WorkoutDate     WorkoutDate[]
 }
 
 model UserWorkout {
