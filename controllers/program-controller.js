@@ -1,6 +1,7 @@
 const tryCatch = require("../utils/tryCatch");
 const prisma = require("../config/index");
 const createError = require("../utils/createError");
+const zlib = require('zlib');
 
 module.exports.createProgram = tryCatch(async(req,res) => {
   const {name,status} = req.body
@@ -16,6 +17,7 @@ module.exports.createProgram = tryCatch(async(req,res) => {
 // Maybe send ids through req.body
 module.exports.addWorkout = tryCatch(async (req, res) => {
   const { programId, workoutId } = req.params;
+  const {day} = req.query
   let lastVal;
   const [maxOrder] = await prisma.ProgramWorkout.findMany({
     where: { programId: +programId },
@@ -47,6 +49,7 @@ module.exports.addWorkout = tryCatch(async (req, res) => {
           id: +workoutId,
         },
       },
+      day : +day
     },
   });
   res.json(rs);
@@ -149,9 +152,9 @@ module.exports.updateProgram = tryCatch(async(req,res,next) => {
     programIdSet.add(foundData.id)
   }
   console.log("----------",programIdSet,dataSet.id)
-  if (foundProgram.length !== updateArray.length){
-    createError(400,"Data size don't match")
-  }
+  // if (foundProgram.length !== updateArray.length){
+  //   createError(400,"Data size don't match")
+  // }
   for (let id of dataSet.id){
     if(!programIdSet.has(id)){
       createError(400,"ProgramId and Id need to match")
@@ -164,7 +167,6 @@ module.exports.updateProgram = tryCatch(async(req,res,next) => {
     createError(400,"There's a duplication in workout order")
   }
   for (newData of updateArray){
-    
     newData.sets = newData.sets > 0 ? newData.sets : 0
     newData.reps = newData.reps > 0 ? newData.reps : 0
     newData.rest = newData.rest > 0 ? newData.rest : 0
@@ -190,16 +192,19 @@ module.exports.updateProgram = tryCatch(async(req,res,next) => {
     tags[key] = Array.from(value)
   }
   const stringifyTag = JSON.stringify(tags)
-  const updatedTag = await prisma.trainingProgram.update({
-    where : {
-      id : +programId
-    },
-    data : {
-      tags : stringifyTag
-    }
-  })
-  console.log(updatedTag)
-  res.json(updatedTag)
+  console.log(tags,"-----++++++++++++++++++++++++++++++++++++++++++++++++++++")
+  // const compressedTag = await zlib.gzipSync(stringifyTag).toString('base64');
+  // console.log(compressedTag,"-----------------------------------------------------------------------")
+  // const updatedTag = await prisma.trainingProgram.update({
+  //   where : {
+  //     id : +programId
+  //   },
+  //   data : {
+  //     tags : compressedTag
+  //   }
+  // })
+  // console.log(updatedTag)
+  res.json({msg : 'done'})
 })
 
 module.exports.getAllPrograms = tryCatch(async(req,res,next) => {

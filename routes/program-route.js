@@ -12,7 +12,7 @@ router.get('/get/:programId',programController.getProgramById)
 // get personal program
 router.get('/personal',authenticate,programController.getPersonalPrograms)
 // Add exercise to program
-router.post('/:programId/:workoutId',programController.addWorkout)
+router.post('/:programId/:workoutId?',programController.addWorkout)
 // Remove exercise from program
 router.delete('/:id',programController.removeWorkout)
 // get program
