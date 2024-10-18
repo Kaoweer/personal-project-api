@@ -22,5 +22,7 @@ router.patch('/:programId',programController.updateProgram)
 // edit publicity
 router.patch('/publicity/:programId/:publicity',programController.editPublicity)
 // 
+router.delete('/:programId/day/:day',programController.removeProgrambyDate)
+// 
 
 module.exports = router

@@ -254,3 +254,14 @@ module.exports.editPublicity = tryCatch(async(req,res,next) => {
   })
   res.json(updatedProgram)
 })
+
+module.exports.removeProgrambyDate = tryCatch(async(req,res) => {
+  const {programId,day} = req.params
+  const deletedDate = await prisma.programWorkout.deleteMany({
+    where : {
+      programId : +programId,
+      day : +day
+    }
+  })
+  res.json(deletedDate)
+})
