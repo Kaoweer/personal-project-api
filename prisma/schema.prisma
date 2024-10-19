@@ -261,6 +261,7 @@ model User {
   TrainerPayment Payment[]         @relation(name: "TrainerPayment") // Payments as both client and trainer
   verification   Verification?
   UserWorkout    UserWorkout[]
+  AllowedUser    AllowedUser[]
 }
 
 enum Gender {
@@ -268,19 +269,31 @@ enum Gender {
   FEMALE
 }
 
+model AllowedUser {
+  id              Int             @id @default(autoincrement())
+  programId       Int
+  trainingProgram TrainingProgram @relation(fields: [programId], references: [id])
+  userId          Int
+  user            User            @relation(fields: [userId], references: [id])
+  isAllowed       Boolean         @default(false)
+
+  @@unique([programId,userId])
+}
+
 model TrainingProgram {
   // Add name
   // Add userAllowed
   // Add image
-  id       Int              @id @default(autoincrement())
-  author   User             @relation(fields: [authorId], references: [id])
-  authorId Int // The trainer who created the course
-  status   ProgramStatus    @default(PERSONAL)
-  rating   Float?
-  name     String?          @default("Untitled program")
-  tags     String?
-  workouts ProgramWorkout[] // A TrainingProgram can consist of many ordered workouts
-  payments Payment[] // Payments made for this program
+  id          Int              @id @default(autoincrement())
+  author      User             @relation(fields: [authorId], references: [id])
+  authorId    Int // The trainer who created the course
+  status      ProgramStatus    @default(PERSONAL)
+  rating      Float?
+  name        String?          @default("Untitled program")
+  tags        String?
+  workouts    ProgramWorkout[] // A TrainingProgram can consist of many ordered workouts
+  payments    Payment[] // Payments made for this program
+  AllowedUser AllowedUser[]
 }
 
 model Workout {

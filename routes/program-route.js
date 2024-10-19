@@ -10,7 +10,12 @@ router.get('/',programController.getAllPrograms)
 // get program by id
 router.get('/get/:programId',programController.getProgramById)
 // get personal program
-router.get('/personal',authenticate,programController.getPersonalPrograms)
+router.get('/personal/',authenticate,programController.getPersonalPrograms)
+// Send allow user
+router.get('/allow/:programId',authenticate,programController.getAllowStatus)
+router.post('/allow/get?',authenticate,programController.getAllRequest)
+router.post('/allow/:programId',authenticate,programController.sendAllowRequest)
+router.patch('/allow/:programId',authenticate,programController.updateRequest)
 // Add exercise to program
 router.post('/:programId/:workoutId?',programController.addWorkout)
 // Remove exercise from program
@@ -23,6 +28,7 @@ router.patch('/:programId',programController.updateProgram)
 router.patch('/publicity/:programId/:publicity',programController.editPublicity)
 // 
 router.delete('/:programId/day/:day',programController.removeProgrambyDate)
+console.log("555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555")
 // 
 
 module.exports = router
