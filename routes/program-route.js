@@ -12,7 +12,8 @@ router.get('/get/:programId',programController.getProgramById)
 // get personal program
 router.get('/personal/',authenticate,programController.getPersonalPrograms)
 // Send allow user
-router.get('/allow/:programId',authenticate,programController.getAllowStatus)
+router.get('/allow',authenticate,programController.getRequest)
+router.get('/allow/user/:programId',authenticate,programController.getAllowStatus)
 router.post('/allow/get?',authenticate,programController.getAllRequest)
 router.post('/allow/:programId',authenticate,programController.sendAllowRequest)
 router.patch('/allow/:programId',authenticate,programController.updateRequest)

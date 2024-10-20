@@ -283,20 +283,20 @@ module.exports.sendAllowRequest = tryCatch(async (req, res) => {
   const { id } = req.user;
   const { programId } = req.params;
 
-  console.log(
-    req.params,
-    "*************************************************************************"
-  );
   const isProgramExist = await prisma.trainingProgram.findUnique({
     where: { id: +programId },
   });
   if (!isProgramExist) {
     createError(400, "This program doesn't exist");
   }
-  const foundUser = await prisma.allowedUser.findFirst({
-    where: { userId: +id },
+  const foundUser = await prisma.allowedUser.findUnique({
+    where: {
+      programId_userId: {
+        programId: +programId,
+        userId: +id,
+      },
+    },
   });
-  console.log(foundUser);
   if (foundUser) {
     createError(400, "This request is already sent");
   }
@@ -365,4 +365,38 @@ module.exports.getAllowStatus = tryCatch(async (req, res) => {
     },
   })
   res.json(isUserAllowed)
+})
+module.exports.getRequest = tryCatch(async (req, res) => {
+  const {id} = req.user
+  console.log(id,"+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+")
+  const userProgram = await prisma.trainingProgram.findMany({
+    where : {
+      authorId : +id,
+      status : "PERSONAL"
+    },
+  })
+  console.log(userProgram)
+  const programArray = userProgram.map((el) => +el.id)
+  console.log(programArray)
+  const requests = await prisma.allowedUser.findMany({
+    where : {
+      programId : {
+        in : programArray
+      }
+    },
+    include : {
+      user : {
+        select : {username : true}
+      },
+      trainingProgram : {
+        select : {name : true}
+      }
+    },
+    orderBy : [
+      {isAllowed : "asc"},
+      {id : "asc"}
+    ]
+  })
+  console.log(programArray,requests)
+  res.json(requests)
 })
