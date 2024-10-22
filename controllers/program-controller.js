@@ -277,9 +277,6 @@ module.exports.removeProgrambyDate = tryCatch(async (req, res) => {
 });
 
 module.exports.sendAllowRequest = tryCatch(async (req, res) => {
-  console.log(
-    1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
-  );
   const { id } = req.user;
   const { programId } = req.params;
 
