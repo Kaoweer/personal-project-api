@@ -23,9 +23,9 @@ for (tag of exerciseData) {
   dataString.push(newObj);
 }
 const users = [];
-users.push({username: "Hello",email: "kaowkawo@admin.com",password: "123456"},
-  {username: "Googbye",email: "kaowkawo1@admin.com",password: "123456"},
-  {username: "Kaowkawo",email: "kaowkawo2@admin.com",password: "123456"}
+users.push({username: "Hello",email: "kaowkawo@admin.com",password: "$10$AmIvP1ydSG/AFsowHPR1MuYBYXzByYYRaF1o7sI5EYK581ckGHEaO"},
+  {username: "Googbye",email: "kaowkawo1@admin.com",password: "$10$AmIvP1ydSG/AFsowHPR1MuYBYXzByYYRaF1o7sI5EYK581ckGHEaO"},
+  {username: "Kaowkawo",email: "kaowkawo2@admin.com",password: "$10$AmIvP1ydSG/AFsowHPR1MuYBYXzByYYRaF1o7sI5EYK581ckGHEaO"}
 );
 
 const TrainingProgram = []

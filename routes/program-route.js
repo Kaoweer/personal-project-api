@@ -11,7 +11,6 @@ router.get('/',programController.getAllPrograms)
 // get program by id
 router.get('/get/:programId',programController.getProgramById)
 // get personal program
-router.get('/public/user/:userId',authenticate,programController.getPersonalPrograms)
 router.get('/personal/',authenticate,programController.getPersonalPrograms)
 // Send allow user
 router.get('/allow',authenticate,programController.getRequest)
