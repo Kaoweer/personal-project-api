@@ -5,6 +5,7 @@ const prisma = require("../config/index")
 
 module.exports = tryCatch(async(req,res,next) => {
   const authorization = req.headers.authorization
+  console.log(authorization)
   if (!authorization || !authorization.includes('Bearer')){
     createError(401,"Unauthorized")
   }

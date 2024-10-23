@@ -6,7 +6,7 @@ const path = require('path')
 const fs = require('fs/promises');
 
 module.exports.createProgram = tryCatch(async (req, res) => {
-  const { name, status,tags } = req.body;
+  const { name, status,tags,detail } = req.body;
 
   const haveFile = !!req.file;
   let uploadResult = {};
@@ -26,7 +26,8 @@ module.exports.createProgram = tryCatch(async (req, res) => {
       name: name,
       status: status,
       tags : stringTag,
-      image : image
+      image : image,
+      detail : detail || ""
     },
   });
   res.json(createdProgram);
@@ -269,16 +270,61 @@ module.exports.getPersonalPrograms = tryCatch(async (req, res, next) => {
 
 module.exports.editPublicity = tryCatch(async (req, res, next) => {
   const { programId, publicity } = req.params;
+  const { name, status, tags, detail } = req.body;
+
+  console.log(tags,"------------------------------------")
+
+  if (isNaN(programId)) {
+    return next(createError(400, "Invalid Program ID"));
+  }
+
+  console.log(programId, publicity);
+  console.log(name, status, tags, detail);
+
+  const haveFile = !!req.file;
+  let uploadResult = {};
+  
+  if (haveFile) {
+    try {
+      uploadResult = await cloudinary.uploader.upload(req.file.path, {
+        overwrite: true,
+        public_id: path.parse(req.file.path).name,
+      });
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error("File deletion error: ", err);
+      });
+    } catch (error) {
+      return next(createError(500, "Image upload failed"));
+    }
+  }
+
   const foundProgram = await prisma.trainingProgram.findUnique({
     where: { id: +programId },
   });
+
   if (!foundProgram) {
-    createError(404, "Program not found");
+    return next(createError(404, "Program not found"));
   }
+
+  const image = uploadResult.secure_url || foundProgram.image;
+  const prvDetail = detail || foundProgram.detail;
+  const prvTag = tags || foundProgram.tags;
+  const prvPublicity = ["PUBLIC", "PRIVATE", "PERSONAL"].includes(publicity)
+    ? publicity
+    : foundProgram.status; // Use string for publicity
+  const stringTag = prvTag ? prvTag : undefined;
+
   const updatedProgram = await prisma.trainingProgram.update({
     where: { id: +programId },
-    data: { status: publicity },
+    data: { 
+      status: prvPublicity,
+      name: name,
+      tags: stringTag,
+      image: image,
+      detail: prvDetail,
+    },
   });
+
   res.json(updatedProgram);
 });
 
@@ -413,4 +459,26 @@ module.exports.getRequest = tryCatch(async (req, res) => {
   })
   console.log(programArray,requests)
   res.json(requests)
+})
+
+module.exports.deleteProgram = tryCatch(async(req,res) => {
+  const {programId} = req.params
+
+  const foundProgram = await prisma.trainingProgram.findUnique({
+    where: { id: +programId },
+  })
+
+  if (!foundProgram){
+    createError(404,"Program not found")
+  }
+  console.log(foundProgram.authorId !== req.user.id,typeof foundProgram.authorId,typeof req.user.id,55555555)
+  if(foundProgram.authorId !== req.user.id){
+    createError(401,"Unauthorized")
+  }
+  const deletedProgram = await prisma.trainingProgram.delete({
+    where : {
+      id : +programId
+    }
+  })
+  res.json(deletedProgram)
 })

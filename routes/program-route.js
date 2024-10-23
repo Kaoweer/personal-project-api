@@ -5,9 +5,9 @@ const authenticate = require('../middlewares/authenticate')
 const isAllowed = require('../middlewares/allow-user')
 const upload = require('../middlewares/upload-multer')
 
-
 // Create program
 router.post('/',authenticate,upload.single('image'),programController.createProgram)
+router.delete('/delete/:programId',authenticate,programController.deleteProgram)
 // get All public programs
 router.get('/',programController.getAllPrograms)
 // get program by id
@@ -29,7 +29,7 @@ router.get('/:programId?',programController.getProgram)
 // edit program
 router.patch('/:programId',programController.updateProgram)
 // edit publicity
-router.patch('/publicity/:programId/:publicity',programController.editPublicity)
+router.patch('/publicity/:programId/:publicity',authenticate,upload.single('image'),programController.editPublicity)
 // 
 router.delete('/:programId/day/:day',programController.removeProgrambyDate)
 // 
