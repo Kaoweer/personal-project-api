@@ -3,9 +3,11 @@ const router = express.Router()
 const programController = require('../controllers/program-controller')
 const authenticate = require('../middlewares/authenticate')
 const isAllowed = require('../middlewares/allow-user')
+const upload = require('../middlewares/upload-multer')
+
 
 // Create program
-router.post('/',authenticate,programController.createProgram)
+router.post('/',authenticate,upload.single('image'),programController.createProgram)
 // get All public programs
 router.get('/',programController.getAllPrograms)
 // get program by id

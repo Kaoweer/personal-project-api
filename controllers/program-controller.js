@@ -1,15 +1,32 @@
 const tryCatch = require("../utils/tryCatch");
 const prisma = require("../config/index");
 const createError = require("../utils/createError");
-const zlib = require("zlib");
+const cloudinary = require("../config/cloudinary")
+const path = require('path')
+const fs = require('fs/promises');
 
 module.exports.createProgram = tryCatch(async (req, res) => {
-  const { name, status } = req.body;
+  const { name, status,tags } = req.body;
+
+  const haveFile = !!req.file;
+  let uploadResult = {};
+  if (haveFile) {
+    uploadResult = await cloudinary.uploader.upload(req.file.path, {
+      overwrite: true,
+      public_id: path.parse(req.file.path).name,
+    });
+    fs.unlink(req.file.path);
+  }
+  const image = uploadResult.secure_url || ""
+
+  const stringTag = JSON.stringify(tags)
   const createdProgram = await prisma.TrainingProgram.create({
     data: {
       authorId: +req.user.id,
       name: name,
       status: status,
+      tags : stringTag,
+      image : image
     },
   });
   res.json(createdProgram);
