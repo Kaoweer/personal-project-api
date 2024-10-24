@@ -104,7 +104,6 @@ module.exports.getProgram = tryCatch(async (req, res, next) => {
   const input = !day
     ? { programId: +programId }
     : { programId: +programId, day: +day };
-  console.log(input);
   const programList = await prisma.programWorkout.findMany({
     orderBy: { orderPriority: "asc" },
     where: input,
@@ -119,11 +118,12 @@ module.exports.getProgram = tryCatch(async (req, res, next) => {
           primaryMuscles: true,
         },
       },
-    },
+    }
   });
   // if (programList.length === 0){
   //   createError(400,"This program doesn't exist")
   // }
+
   console.log("Program", programList);
   res.json(programList);
 });
