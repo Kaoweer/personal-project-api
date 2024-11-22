@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,66 +14,145 @@ datasource db {
 }
 
 model SavedProgram {
-  id        Int @id @default(autoincrement())
-  userId    Int
-  programId Int
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  programId Int 
 
-  @@index([userId], map: "SavedProgram_userId_fkey")
   @@map("savedprogram")
+}
+
+model User {
+  id             Int               @id @default(autoincrement())
+  email          String?           @unique
+  mobile         String?           @unique
+  username       String            @unique
+  gender         Gender?
+  weight         Float?
+  height         Float?
+  role           Role              @default(CLIENT)
+  password       String
+  progressImages ProgressImage[]
+  programs       TrainingProgram[]
+  ClientPayment  Payment[]         @relation(name: "ClientPayment") // Payments as both client and trainer
+  TrainerPayment Payment[]         @relation(name: "TrainerPayment") // Payments as both client and trainer
+  verification   Verification?
+  UserWorkout    UserWorkout[]
+  AllowedUser    AllowedUser[]
+  SavedProgram   SavedProgram[]
+  
+
+  @@map("user")
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 model AllowedUser {
   id              Int             @id @default(autoincrement())
   programId       Int
+  trainingProgram TrainingProgram @relation(fields: [programId], references: [id])
   userId          Int
+  user            User            @relation(fields: [userId], references: [id])
   isAllowed       Boolean         @default(false)
-  trainingProgram TrainingProgram @relation(fields: [programId], references: [id], map: "AllowedUser_programId_fkey")
 
-  @@unique([programId, userId], map: "AllowedUser_programId_userId_key")
-  @@index([userId], map: "AllowedUser_userId_fkey")
+  @@unique([programId, userId])
   @@map("alloweduser")
 }
 
 model TrainingProgram {
+  // Add name
+  // Add userAllowed
+  // Add image
   id          Int              @id @default(autoincrement())
-  authorId    Int
+  author      User             @relation(fields: [authorId], references: [id])
+  authorId    Int // The trainer who created the course
   status      ProgramStatus    @default(PERSONAL)
   rating      Float?
   name        String?          @default("Untitled program")
   tags        String?
   detail      String?
   image       String?
+  workouts    ProgramWorkout[] // A TrainingProgram can consist of many ordered workouts
+  payments    Payment[] // Payments made for this program
   AllowedUser AllowedUser[]
-  payments    Payment[]
-  workouts    ProgramWorkout[]
 
-  @@index([authorId], map: "TrainingProgram_authorId_fkey")
   @@map("trainingprogram")
+}
+
+model Workout {
+  id               Int              @id @default(autoincrement())
+  name             String
+  force            String?
+  level            String?
+  mechanic         String?
+  equipment        String?
+  primaryMuscles   String?
+  secondaryMuscles String?
+  instructions     String?
+  category         String?
+  userWorkouts     UserWorkout[] // Users' personal records for this workout
+  programWorkout   ProgramWorkout[]
+
+  @@map("workout")
+}
+
+model WorkoutDate {
+  id               Int            @id @default(autoincrement())
+  programworkoutId Int
+  ProgramWorkout   ProgramWorkout @relation(fields: [programworkoutId], references: [id], onDelete: Cascade)
+  date             Int
+  @@map("workoutdate")
 }
 
 model ProgramWorkout {
   id              Int             @id @default(autoincrement())
+  trainingProgram TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
   programId       Int
+  workout         Workout         @relation(fields: [workoutId], references: [id], onDelete: Cascade)
   workoutId       Int
-  orderPriority   Int
+  orderPriority   Int // Order of the workout in the training program
   sets            Int
   reps            Int
   rest            Int
   day             Int
-  trainingProgram TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade, map: "ProgramWorkout_programId_fkey")
+  WorkoutDate     WorkoutDate[]
 
-  @@index([programId], map: "ProgramWorkout_programId_fkey")
-  @@index([workoutId], map: "ProgramWorkout_workoutId_fkey")
   @@map("programworkout")
+}
+
+model UserWorkout {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
+  workout        Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  workoutId      Int
+  personalRecord Float? // User-specific personal best for the workout
+  createdAt      DateTime @default(now()) // Track when the personal record was achieved
+  updatedAt      DateTime @updatedAt
+
+  @@map("userworkout")
+}
+
+model Verification {
+  id         Int     @id @default(autoincrement())
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int     @unique
+  imageUrl   String // Image URL of the certification
+  isVerified Boolean @default(false)
+
+  @@map("verification")
 }
 
 model ProgressImage {
   id        Int      @id @default(autoincrement())
   url       String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
 
-  @@index([userId], map: "ProgressImage_userId_fkey")
   @@map("progressimage")
 }
 
@@ -76,15 +161,20 @@ model Payment {
   amount            Float
   date              DateTime        @default(now())
   status            PaymentStatus
-  clientId          Int
-  trainerId         Int
-  trainingProgramId Int
-  trainingProgram   TrainingProgram @relation(fields: [trainingProgramId], references: [id], onDelete: Cascade, map: "Payment_trainingProgramId_fkey")
+  client            User            @relation(name: "ClientPayment", fields: [clientId], references: [id], onDelete: Cascade)
+  clientId          Int // The user who is making the payment
+  trainer           User            @relation(name: "TrainerPayment", fields: [trainerId], references: [id], onDelete: Cascade)
+  trainerId         Int // The trainer receiving the payment
+  trainingProgram   TrainingProgram @relation(fields: [trainingProgramId], references: [id], onDelete: Cascade) // Course being paid for
+  trainingProgramId Int // The specific course being paid for
 
-  @@index([clientId], map: "Payment_clientId_fkey")
-  @@index([trainerId], map: "Payment_trainerId_fkey")
-  @@index([trainingProgramId], map: "Payment_trainingProgramId_fkey")
   @@map("payment")
+}
+
+enum Role {
+  CLIENT
+  TRAINER
+  ADMIN
 }
 
 enum ProgramStatus {
