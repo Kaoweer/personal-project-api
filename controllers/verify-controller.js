@@ -30,6 +30,8 @@ module.exports.uploadVerify = tryCatch(async(req,res) => {
 
 module.exports.editVerify = tryCatch(async(req,res) => {
   const {userId} = req.params
+  console.log(req.params)
+  console.log(userId,"++++++++++++++++++++++++++")
   const {role} = req.body
   const foundUser = await prisma.user.findUnique({
     where : {
@@ -62,7 +64,7 @@ module.exports.getVerify = tryCatch(async(req,res) => {
   const verifyArray = await prisma.verification.findMany({
     include : {
       user : {
-        select : {username:true}
+        select : {username:true,role:true},
       }
     }
   })

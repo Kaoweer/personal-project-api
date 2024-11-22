@@ -22,5 +22,5 @@ app.use('/verify',verifyRoute)
 app.use(errorHandler)
 app.use("*",notFoundHandler)
 
-const port = process.env.PORT || 5000
+const port = 8000 || 5000
 app.listen(port,() => console.log(`This server is running on port ${port}`))
