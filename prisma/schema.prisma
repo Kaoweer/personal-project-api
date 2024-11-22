@@ -7,33 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model alloweduser {
+model SavedProgram {
+  id        Int @id @default(autoincrement())
+  userId    Int
+  programId Int
+
+  @@index([userId], map: "SavedProgram_userId_fkey")
+  @@map("savedprogram")
+}
+
+model AllowedUser {
   id              Int             @id @default(autoincrement())
   programId       Int
   userId          Int
   isAllowed       Boolean         @default(false)
-  trainingprogram trainingprogram @relation(fields: [programId], references: [id], map: "AllowedUser_programId_fkey")
+  trainingProgram TrainingProgram @relation(fields: [programId], references: [id], map: "AllowedUser_programId_fkey")
 
   @@unique([programId, userId], map: "AllowedUser_programId_userId_key")
   @@index([userId], map: "AllowedUser_userId_fkey")
+  @@map("alloweduser")
 }
 
-model payment {
-  id                Int             @id @default(autoincrement())
-  amount            Float
-  date              DateTime        @default(now())
-  status            payment_status
-  clientId          Int
-  trainerId         Int
-  trainingProgramId Int
-  trainingprogram   trainingprogram @relation(fields: [trainingProgramId], references: [id], onDelete: Cascade, map: "Payment_trainingProgramId_fkey")
+model TrainingProgram {
+  id          Int              @id @default(autoincrement())
+  authorId    Int
+  status      ProgramStatus    @default(PERSONAL)
+  rating      Float?
+  name        String?          @default("Untitled program")
+  tags        String?
+  detail      String?
+  image       String?
+  AllowedUser AllowedUser[]
+  payments    Payment[]
+  workouts    ProgramWorkout[]
 
-  @@index([clientId], map: "Payment_clientId_fkey")
-  @@index([trainerId], map: "Payment_trainerId_fkey")
-  @@index([trainingProgramId], map: "Payment_trainingProgramId_fkey")
+  @@index([authorId], map: "TrainingProgram_authorId_fkey")
+  @@map("trainingprogram")
 }
 
-model programworkout {
+model ProgramWorkout {
   id              Int             @id @default(autoincrement())
   programId       Int
   workoutId       Int
@@ -42,52 +54,46 @@ model programworkout {
   reps            Int
   rest            Int
   day             Int
-  trainingprogram trainingprogram @relation(fields: [programId], references: [id], onDelete: Cascade, map: "ProgramWorkout_programId_fkey")
+  trainingProgram TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade, map: "ProgramWorkout_programId_fkey")
 
   @@index([programId], map: "ProgramWorkout_programId_fkey")
   @@index([workoutId], map: "ProgramWorkout_workoutId_fkey")
+  @@map("programworkout")
 }
 
-model progressimage {
+model ProgressImage {
   id        Int      @id @default(autoincrement())
   url       String
   createdAt DateTime @default(now())
   userId    Int
 
   @@index([userId], map: "ProgressImage_userId_fkey")
+  @@map("progressimage")
 }
 
-model savedprogram {
-  id        Int @id @default(autoincrement())
-  userId    Int
-  programId Int
+model Payment {
+  id                Int             @id @default(autoincrement())
+  amount            Float
+  date              DateTime        @default(now())
+  status            PaymentStatus
+  clientId          Int
+  trainerId         Int
+  trainingProgramId Int
+  trainingProgram   TrainingProgram @relation(fields: [trainingProgramId], references: [id], onDelete: Cascade, map: "Payment_trainingProgramId_fkey")
 
-  @@index([userId], map: "SavedProgram_userId_fkey")
+  @@index([clientId], map: "Payment_clientId_fkey")
+  @@index([trainerId], map: "Payment_trainerId_fkey")
+  @@index([trainingProgramId], map: "Payment_trainingProgramId_fkey")
+  @@map("payment")
 }
 
-model trainingprogram {
-  id             Int                    @id @default(autoincrement())
-  authorId       Int
-  status         trainingprogram_status @default(PERSONAL)
-  rating         Float?
-  name           String?                @default("Untitled program")
-  tags           String?
-  detail         String?
-  image          String?
-  alloweduser    alloweduser[]
-  payment        payment[]
-  programworkout programworkout[]
-
-  @@index([authorId], map: "TrainingProgram_authorId_fkey")
-}
-
-enum trainingprogram_status {
+enum ProgramStatus {
   PUBLIC
   PRIVATE
   PERSONAL
 }
 
-enum payment_status {
+enum PaymentStatus {
   PENDING
   COMPLETED
   FAILED

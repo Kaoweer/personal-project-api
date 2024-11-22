@@ -18,6 +18,8 @@ model SavedProgram {
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   programId Int 
+
+  @@map("savedprogram")
 }
 
 model User {
@@ -38,6 +40,9 @@ model User {
   UserWorkout    UserWorkout[]
   AllowedUser    AllowedUser[]
   SavedProgram   SavedProgram[]
+  
+
+  @@map("user")
 }
 
 enum Gender {
@@ -54,6 +59,7 @@ model AllowedUser {
   isAllowed       Boolean         @default(false)
 
   @@unique([programId, userId])
+  @@map("alloweduser")
 }
 
 model TrainingProgram {
@@ -72,6 +78,8 @@ model TrainingProgram {
   workouts    ProgramWorkout[] // A TrainingProgram can consist of many ordered workouts
   payments    Payment[] // Payments made for this program
   AllowedUser AllowedUser[]
+
+  @@map("trainingprogram")
 }
 
 model Workout {
@@ -87,6 +95,8 @@ model Workout {
   category         String?
   userWorkouts     UserWorkout[] // Users' personal records for this workout
   programWorkout   ProgramWorkout[]
+
+  @@map("workout")
 }
 
 model WorkoutDate {
@@ -94,6 +104,7 @@ model WorkoutDate {
   programworkoutId Int
   ProgramWorkout   ProgramWorkout @relation(fields: [programworkoutId], references: [id], onDelete: Cascade)
   date             Int
+  @@map("workoutdate")
 }
 
 model ProgramWorkout {
@@ -108,6 +119,8 @@ model ProgramWorkout {
   rest            Int
   day             Int
   WorkoutDate     WorkoutDate[]
+
+  @@map("programworkout")
 }
 
 model UserWorkout {
@@ -119,6 +132,8 @@ model UserWorkout {
   personalRecord Float? // User-specific personal best for the workout
   createdAt      DateTime @default(now()) // Track when the personal record was achieved
   updatedAt      DateTime @updatedAt
+
+  @@map("userworkout")
 }
 
 model Verification {
@@ -127,6 +142,8 @@ model Verification {
   userId     Int     @unique
   imageUrl   String // Image URL of the certification
   isVerified Boolean @default(false)
+
+  @@map("verification")
 }
 
 model ProgressImage {
@@ -135,6 +152,8 @@ model ProgressImage {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
+
+  @@map("progressimage")
 }
 
 model Payment {
@@ -148,6 +167,8 @@ model Payment {
   trainerId         Int // The trainer receiving the payment
   trainingProgram   TrainingProgram @relation(fields: [trainingProgramId], references: [id], onDelete: Cascade) // Course being paid for
   trainingProgramId Int // The specific course being paid for
+
+  @@map("payment")
 }
 
 enum Role {
