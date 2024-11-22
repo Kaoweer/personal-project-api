@@ -235,7 +235,7 @@ module.exports.updateProgram = tryCatch(async (req, res, next) => {
 });
 
 module.exports.getAllPrograms = tryCatch(async (req, res, next) => {
-  const allProgram = await prisma.trainingProgram.findMany({
+  const allProgram = await prisma.trainingprogram.findMany({
     where: { status: "PUBLIC" },
     include: {
       author: {
