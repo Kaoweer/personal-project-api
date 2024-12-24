@@ -120,12 +120,20 @@ module.exports.getProgram = tryCatch(async (req, res, next) => {
       },
     }
   });
-  // if (programList.length === 0){
-  //   createError(400,"This program doesn't exist")
-  // }
-
-  console.log("Program", programList);
-  res.json(programList);
+  const maxDay = await prisma.programWorkout.aggregate({
+    where: {
+      programId: +programId
+    },
+    _max: {
+      day: true
+    }
+  });
+  const response = {
+    programList : [...programList],
+    totalDays: maxDay._max.day || 0
+  };
+  
+  res.json(response);
 });
 
 module.exports.getProgramById = tryCatch(async (req, res, next) => {
@@ -171,7 +179,6 @@ module.exports.updateProgram = tryCatch(async (req, res, next) => {
   for (foundData of foundProgram) {
     programIdSet.add(foundData.id);
   }
-  console.log("----------", programIdSet, dataSet.id);
   // if (foundProgram.length !== updateArray.length){
   //   createError(400,"Data size don't match")
   // }
@@ -216,10 +223,6 @@ module.exports.updateProgram = tryCatch(async (req, res, next) => {
     tags[key] = Array.from(value);
   }
   const stringifyTag = JSON.stringify(tags);
-  console.log(
-    tags,
-    "-----++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  );
   // const compressedTag = await zlib.gzipSync(stringifyTag).toString('base64');
   // console.log(compressedTag,"-----------------------------------------------------------------------")
   // const updatedTag = await prisma.trainingProgram.update({
@@ -271,8 +274,6 @@ module.exports.getPersonalPrograms = tryCatch(async (req, res, next) => {
 module.exports.editPublicity = tryCatch(async (req, res, next) => {
   const { programId, publicity } = req.params;
   const { name, status, tags, detail } = req.body;
-
-  console.log(tags,"------------------------------------")
 
   if (isNaN(programId)) {
     return next(createError(400, "Invalid Program ID"));
@@ -428,14 +429,12 @@ module.exports.getAllowStatus = tryCatch(async (req, res) => {
 })
 module.exports.getRequest = tryCatch(async (req, res) => {
   const {id} = req.user
-  console.log(id,"+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+")
   const userProgram = await prisma.trainingProgram.findMany({
     where : {
       authorId : +id,
       status : "PERSONAL"
     },
   })
-  console.log(userProgram)
   const programArray = userProgram.map((el) => +el.id)
   console.log(programArray)
   const requests = await prisma.allowedUser.findMany({
