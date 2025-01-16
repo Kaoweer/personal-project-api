@@ -238,30 +238,53 @@ module.exports.updateProgram = tryCatch(async (req, res, next) => {
 });
 
 module.exports.getAllPrograms = tryCatch(async (req, res, next) => {
-  const allProgram = await prisma.trainingProgram.findMany({
-    where: { status: "PUBLIC" },
-    include: {
-      author: {
-        select: {
-          username: true,
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const [allProgram, totalCount] = await prisma.$transaction([
+    prisma.trainingProgram.findMany({
+      where: { status: "PUBLIC" },
+      include: {
+        author: {
+          select: {
+            username: true,
+          },
         },
-      },
-      workouts: {
-        include: {
-          workout: {
-            select: {
-              category: true,
-              mechanic: true,
-              level: true,
-              equipment: true,
+        workouts: {
+          include: {
+            workout: {
+              select: {
+                category: true,
+                mechanic: true,
+                level: true,
+                equipment: true,
+              },
             },
           },
         },
       },
-    },
+      skip,
+      take: limit,
+    }),
+    prisma.trainingProgram.count({
+      where: { status: "PUBLIC" }
+    })
+  ]);
+
+  const totalPages = Math.ceil(totalCount / limit);
+
+  res.json({
+    data: allProgram,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalItems: totalCount,
+      itemsPerPage: limit
+    }
   });
-  res.json(allProgram);
 });
+
 
 module.exports.getPersonalPrograms = tryCatch(async (req, res, next) => {
   const { id } = req.user;
