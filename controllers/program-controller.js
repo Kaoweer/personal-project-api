@@ -484,23 +484,32 @@ module.exports.getRequest = tryCatch(async (req, res) => {
 })
 
 module.exports.deleteProgram = tryCatch(async(req,res) => {
-  const {programId} = req.params
+  const {programId} = req.params;
 
   const foundProgram = await prisma.trainingProgram.findUnique({
     where: { id: +programId },
-  })
+  });
 
   if (!foundProgram){
-    createError(404,"Program not found")
+    createError(404,"Program not found");
   }
-  console.log(foundProgram.authorId !== req.user.id,typeof foundProgram.authorId,typeof req.user.id,55555555)
+
   if(foundProgram.authorId !== req.user.id){
-    createError(401,"Unauthorized")
+    createError(401,"Unauthorized");
   }
-  const deletedProgram = await prisma.trainingProgram.delete({
-    where : {
-      id : +programId
-    }
-  })
-  res.json(deletedProgram)
-})
+
+  // Delete related records first
+  await prisma.$transaction([
+    prisma.allowedUser.deleteMany({
+      where: { programId: +programId }
+    }),
+    prisma.programWorkout.deleteMany({
+      where: { programId: +programId }
+    }),
+    prisma.trainingProgram.delete({
+      where: { id: +programId }
+    })
+  ]);
+
+  res.json({ message: "Program deleted successfully" });
+});

@@ -53,9 +53,9 @@ enum Gender {
 model AllowedUser {
   id              Int             @id @default(autoincrement())
   programId       Int
-  trainingProgram TrainingProgram @relation(fields: [programId], references: [id])
+  trainingProgram TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
   userId          Int
-  user            User            @relation(fields: [userId], references: [id])
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   isAllowed       Boolean         @default(false)
 
   @@unique([programId, userId])
@@ -67,7 +67,7 @@ model TrainingProgram {
   // Add userAllowed
   // Add image
   id          Int              @id @default(autoincrement())
-  author      User             @relation(fields: [authorId], references: [id])
+  author      User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    Int // The trainer who created the course
   status      ProgramStatus    @default(PERSONAL)
   rating      Float?
